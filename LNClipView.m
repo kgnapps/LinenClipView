@@ -10,10 +10,6 @@
 
 #define LN_RUNNING_LION (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
 
-@interface LNClipView : NSClipView
-@property (nonatomic, strong) NSColor *pattern;
-@end
-
 @implementation LNClipView
 
 @synthesize pattern = _pattern;
@@ -33,17 +29,17 @@
     static NSGradient *gradient = nil;
     if(gradient == nil){
         gradient = [[NSGradient alloc] initWithStartingColor:
-                    [NSColor colorWithDeviceWhite:0.0f alpha:0.2f]
+                    [NSColor colorWithDeviceWhite:0.0f alpha:0.1f]
                                                  endingColor:[NSColor clearColor]];
     }
     
     NSRect gradientRect = self.bounds;
-    gradientRect.size.height = 8.0f;
+    gradientRect.size.height = 4.0f;
     if(NSMinY(self.bounds) < 0.0f){
         gradientRect.origin.y += -NSMinY(self.bounds)-NSHeight(gradientRect);
         [gradient drawInRect:gradientRect angle:-90.0f];
     }else if(NSMinY(self.bounds) > 1.0f){
-        NSRect docRect = [[[self enclosingScrollView] documentView] frame];
+        NSRect docRect = [[(NSScrollView *)[self superview] documentView] frame];
         CGFloat yOffset = NSHeight(self.bounds)-(NSHeight(docRect)-NSMinY(self.bounds));
         gradientRect.origin.y += NSHeight(self.bounds)-yOffset;
         [gradient drawInRect:gradientRect angle:90.0f];
@@ -61,10 +57,15 @@
 - (void)setup{
     if(LN_RUNNING_LION){
         id docView = [self documentView];
-        _clipView = [[LNClipView alloc] initWithFrame:
-                     [[self contentView] frame]];
-        [self setContentView:_clipView];
-        [self setDocumentView:docView];
+        
+        if (![[docView class] isSubclassOfClass:[LNClipView class]]) {
+            _clipView = [[LNClipView alloc] initWithFrame:
+                         [[self contentView] frame]];
+            [self setContentView:_clipView];
+            [self setDocumentView:docView];
+        } else {
+            _clipView = docView;
+        }
     }
 }
 
@@ -116,7 +117,7 @@
 }
 
 - (void)setPattern:(NSImage *)pattern{
-    _clipView.pattern = [NSColor colorWithPatternImage:pattern];
+    [(LNClipView *)self.contentView setPattern:[NSColor colorWithPatternImage:pattern]];
     [_clipView setNeedsDisplay:YES];    
 }
 

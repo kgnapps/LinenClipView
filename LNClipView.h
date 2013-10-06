@@ -9,6 +9,10 @@
 #import <AppKit/AppKit.h>
 #import <WebKit/WebKit.h>
 
+@interface LNClipView : NSClipView
+@property (nonatomic, strong) NSColor *pattern;
+@end
+
 @interface LNScrollView : NSScrollView
 - (void)setPattern:(NSImage *)pattern;
 @end
